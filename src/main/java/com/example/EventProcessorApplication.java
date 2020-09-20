@@ -10,10 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import com.example.service.event.processor.EventProcessor;
 @SpringBootApplication
 public class EventProcessorApplication implements CommandLineRunner{
-	
-	@Autowired
-    EventProcessor eventProcessor;
-			
+		
 	private final Logger logger = LoggerFactory.getLogger(EventProcessorApplication.class);
 	public static void main(String[] args) {
 		SpringApplication.run(EventProcessorApplication.class, args);
