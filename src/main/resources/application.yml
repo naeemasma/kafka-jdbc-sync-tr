@@ -21,7 +21,8 @@ app:
       topic: test    
     group-id: test-consumer-group
     publish-to:
-      topic: test1
+      topic: test1    
+    eos-mode: BETA
   producer:
     producer-per-consumer-partition: false
     sub-batch-per-partition: false

@@ -15,6 +15,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DefaultAfterRollbackProcessor;
 import org.springframework.kafka.support.converter.RecordMessageConverter;
 import org.springframework.kafka.support.converter.StringJsonMessageConverter;
@@ -37,12 +38,12 @@ import com.example.service.EventMessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.sql.DataSource;
+import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.ContainerProperties.EOSMode;
 
 @Service
 @Configuration
@@ -74,6 +75,9 @@ public class EventProcessor {
 
 	@Value("${app.producer.sub-batch-per-partition}")
 	private boolean subBatchPerPartition; 
+	
+	@Value("${app.consumer.eos-mode}")
+	private String eosMode; 
 	
 	@Value("${app.producer.client-id}")
 	private String producerClientId;
@@ -121,7 +125,8 @@ public class EventProcessor {
 	  { 
 		  ConcurrentKafkaListenerContainerFactory<Object, Object>
 		  factory = new ConcurrentKafkaListenerContainerFactory<>();
-		  configurer.configure(factory, kafkaConsumerFactory);	
+		  configurer.configure(factory, kafkaConsumerFactory);
+		  factory.getContainerProperties().setEosMode(ContainerProperties.EOSMode.valueOf(eosMode));
 		  factory.getContainerProperties().setTransactionManager(chainedTM);
 		  template.setTransactionIdPrefix(this.transactionIdPrefix);
 		  factory.setAfterRollbackProcessor(new DefaultAfterRollbackProcessor<Object, Object>((record, exception) -> {
