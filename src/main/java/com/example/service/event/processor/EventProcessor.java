@@ -73,7 +73,7 @@ public class EventProcessor {
 	@Value("${app.producer.producer-per-consumer-partition}")
 	private boolean producerPerConsumerPartition;	
 
-	@Value("${app.producer.sub-batch-per-partition}")
+	@Value("${app.consumer.sub-batch-per-partition}")
 	private boolean subBatchPerPartition; 
 	
 	@Value("${app.consumer.eos-mode}")
@@ -127,6 +127,7 @@ public class EventProcessor {
 		  factory = new ConcurrentKafkaListenerContainerFactory<>();
 		  configurer.configure(factory, kafkaConsumerFactory);
 		  factory.getContainerProperties().setEosMode(ContainerProperties.EOSMode.valueOf(eosMode));
+		  factory.getContainerProperties().setSubBatchPerPartition(subBatchPerPartition);
 		  factory.getContainerProperties().setTransactionManager(chainedTM);
 		  template.setTransactionIdPrefix(this.transactionIdPrefix);
 		  factory.setAfterRollbackProcessor(new DefaultAfterRollbackProcessor<Object, Object>((record, exception) -> {
@@ -145,12 +146,12 @@ public class EventProcessor {
 			       
 			    }, new FixedBackOff(0L, 0L)));//A simple BackOff implementation that provides a configured interval between two attempts and a configured number of retries.
 
-		 logger.info(String.format("KafkaTemplate.transactionIdPrefix: %s - subBatchPerPartition: %s -  producerPerConsumerPartition: %s" +
-		  		 " - ConcurrentKafkaListenerContainerFactory EOS Mode: %s", 
+		 logger.info(String.format("KafkaTemplate.transactionIdPrefix: %s -  producerPerConsumerPartition: %s" +
+		  		 " - ConcurrentKafkaListenerContainerFactory EOS Mode: %s - subBatchPerPartition: %s ", 
 				  this.kafkaTemplate.getTransactionIdPrefix()
-				  , this.kafkaTemplate.getProducerFactory().getConfigurationProperties().get(Constants.SUB_BATCH_PER_PARTITION)
 				  , this.kafkaTemplate.getProducerFactory().isProducerPerConsumerPartition(),
 				  factory.getContainerProperties().getEosMode()
+				  , factory.getContainerProperties().getSubBatchPerPartition()
 				  ));	  
 		  return factory;  
 	  }
@@ -235,7 +236,6 @@ public class EventProcessor {
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, Class.forName(valueSerializer));
         props.put(ProducerConfig.CLIENT_ID_CONFIG,producerClientId);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, Class.forName(keySerializer));
-        props.put(Constants.SUB_BATCH_PER_PARTITION, subBatchPerPartition);
         return props;
     }
     
