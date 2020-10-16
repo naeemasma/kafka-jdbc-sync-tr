@@ -16,10 +16,11 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       transaction-id-prefix: tx.
 app:
+  instance-id-error: 9000
   consumer:
+    props: group.instance.id=test-consumer-group-ins9000
     subscribed-to: 
-      topic: test    
-    group-id: test-consumer-group
+      topic: test 
     publish-to:
       topic: test1    
     eos-mode: BETA    
@@ -27,6 +28,8 @@ app:
   producer:
     producer-per-consumer-partition: false
     client-id: test0_client_id
+    standalone:
+      transaction-id-prefix: txp.
   retry: 
     topic: test.retry
     attempts: 2

@@ -5,6 +5,7 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -20,6 +21,13 @@ import com.example.service.event.processor.EventProcessor;
 @Service("EventMessageService")
 public class EventMessageServiceImpl implements EventMessageService {
 	private final Logger logger = LoggerFactory.getLogger(EventMessageServiceImpl.class);
+	
+	@Value("${server.port}")
+	private String instanceId;
+	
+	@Value("${app.instance-id-error}")
+	private String errorInstanceId;
+	
 	@Autowired
     EventMessageDao eventMessageDao;
 	@Autowired
@@ -29,7 +37,8 @@ public class EventMessageServiceImpl implements EventMessageService {
 	public int insert(EventMessage eventMessage) {
 		int rowsUpdated = eventMessageDao.insert(eventMessage);	
 		EventMessageDetail msgDtl = new EventMessageDetail(eventMessage.getId(), 
-        		eventMessage.getDescription().toUpperCase().startsWith("ERROR")?"CRITICAL":"MEDIUM");
+        		(eventMessage.getDescription().toUpperCase().startsWith("ERROR") 
+        				&& instanceId.equalsIgnoreCase(errorInstanceId))?"CRITICAL":"MEDIUM");
 		eventMessageDetailDao.insert(msgDtl);
 		return rowsUpdated;
 	}
